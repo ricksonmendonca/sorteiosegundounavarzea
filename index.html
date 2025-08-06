@@ -2,197 +2,197 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Sorteador de Times - Várzea FC</title>
   <style>
     body {
-      background: #000;
+      background-color: #000;
       color: #ff0;
-      font-family: sans-serif;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    h1 {
+      text-align: center;
+      padding: 20px;
+      background-color: #111;
+      margin: 0;
+    }
+    #painel {
+      padding: 20px;
       text-align: center;
     }
+    button {
+      background-color: #ff0;
+      border: none;
+      padding: 10px 20px;
+      margin: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
     .jogador {
-      border: 1px solid yellow;
-      padding: 5px;
-      margin: 4px;
       display: inline-block;
-      border-radius: 6px;
+      margin: 5px;
+      padding: 5px 10px;
+      background-color: #222;
+      border: 1px solid #555;
+      border-radius: 5px;
       cursor: pointer;
     }
-    .selecionado {
-      background: yellow;
-      color: black;
-    }
-    #resultados {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 20px;
+    .jogador.selecionado {
+      background-color: #ff0;
+      color: #000;
     }
     .time {
-      background: #111;
+      margin: 20px;
       padding: 10px;
-      border: 1px solid #555;
-      border-radius: 8px;
-      width: 200px;
+      background: #111;
+      border-radius: 10px;
+      border: 1px solid #333;
+      display: inline-block;
+      vertical-align: top;
+    }
+    .time h2 {
+      margin-top: 0;
     }
     table {
-      margin: 20px auto;
-      background: #111;
+      width: 100%;
       color: #fff;
+      border-collapse: collapse;
+      margin-top: 20px;
     }
-    table input, table select {
+    table, th, td {
+      border: 1px solid #555;
+    }
+    th, td {
+      padding: 8px;
+      text-align: center;
+    }
+    select, input[type="number"] {
       padding: 4px;
+      width: 60px;
     }
   </style>
 </head>
 <body>
   <h1>Sorteador de Times - Várzea FC</h1>
-  <input id="busca" placeholder="Buscar jogador..." />
-  <br>
-  <button onclick="marcarTodos()">Marcar todos</button>
-  <button onclick="desmarcarTodos()">Desmarcar todos</button>
-  <button onclick="filtrarGoleiros()">Só goleiros</button>
-  <button onclick="filtrarEstrelas()">Estrelas 4+</button>
-  <div id="jogadores"></div>
-  <div id="resultados"></div>
-  <div id="formRodada"></div>
+  <div id="painel">
+    <div id="jogadores"></div>
+    <br>
+    
+    <label for="numTimes">Quantidade de Times:</label>
+    <input type="number" id="numTimes" min="2" max="10" value="2" style="width: 50px;" />
+    <button onclick="sortearTimes()">Sortear Times</button>
+    
+    <div id="resultados"></div>
+    <div id="rodada"></div>
+  </div>
+
   <script>
-// Lista atualizada de jogadores com nomes e estrelas base (3 por padrão)
-const jogadores = [
-  { nome: 'NICOLAS', estrela: 3 },
-  { nome: 'RUAN', estrela: 3 },
-  { nome: 'SENEGAL', estrela: 3 },
-  { nome: 'RICKSON', estrela: 3 },
-  { nome: 'MUNIZ', estrela: 3 },
-  { nome: 'PEDRO QUEIROZ', estrela: 3 },
-  { nome: 'ALMIRZINHO', estrela: 3 },
-  { nome: 'MARCELINHO', estrela: 3 },
-  { nome: 'ALVARO', estrela: 3 },
-  { nome: 'PELANCA', estrela: 3 },
-  { nome: 'JOÃO MARCOS', estrela: 3 },
-  { nome: 'FIUZA', estrela: 3 },
-  { nome: 'THALLES', estrela: 3 },
-  { nome: 'LÉO', estrela: 3 },
-  { nome: 'NEY', estrela: 3 },
-  { nome: 'RONINHO', estrela: 3 },
-  { nome: 'KEVIN', estrela: 3 },
-  { nome: 'YAGO', estrela: 3 },
-  { nome: 'MATHEU FARIA', estrela: 3 },
-  { nome: 'DENYS', estrela: 3 },
-  { nome: 'GUERRON', estrela: 3 },
-  { nome: 'PAULINHO', estrela: 3 },
-  { nome: 'PAULO', estrela: 3 },
-  { nome: 'ÍTALO', estrela: 3 },
-  { nome: 'JEFERSON', estrela: 3 },
-  { nome: 'RENZO', estrela: 3 },
-  { nome: 'CANJICA', estrela: 3 },
-  { nome: 'DOUGLAS', estrela: 3 },
-  { nome: 'SAVIO', estrela: 3 },
-  { nome: 'PEDRO', estrela: 3 },
-  { nome: 'DEDÉ', estrela: 3 },
-  { nome: 'WASHINGTON', estrela: 3 },
-  { nome: 'BERENGER', estrela: 3 },
-  { nome: 'LUCAS AZEVEDO', estrela: 3 },
-  { nome: 'VINI', estrela: 3 },
-  { nome: 'RAFAEL', estrela: 3 },
-  { nome: 'KLAISON', estrela: 3, goleiro: true },
-  { nome: 'BATATA', estrela: 3, goleiro: true }
-];
+    const jogadores = [
+      "NICOLAS", "RUAN", "SENEGAL", "RICKSON", "MUNIZ", "PEDRO QUEIROZ", "ALMIRZINHO", "MARCELINHO",
+      "ALVARO", "PELANCA", "JOÃO MARCOS", "FIUZA", "THALLES", "LÉO", "NEY", "RONINHO", "KEVIN", "YAGO",
+      "MATHEU FARIA", "DENYS", "GUERRON", "PAULINHO", "PAULO", "ÍTALO", "JEFERSON", "RENZO", "CANJICA",
+      "DOUGLAS", "SAVIO", "PEDRO", "DEDÉ", "WASHINGTON", "BERENGER", "LUCAS AZEVEDO", "VINI", "RAFAEL"
+    ];
 
-const animarSorteio = true;
-const equilibrioPorEstrelas = true;
+    let jogadoresSelecionados = [];
 
-const buscaInput = document.getElementById('busca');
-const containerJogadores = document.getElementById('jogadores');
-
-buscaInput.addEventListener('input', () => {
-  const termo = buscaInput.value.toLowerCase();
-  renderJogadores(jogadores.filter(j => j.nome.toLowerCase().includes(termo)));
-});
-
-function marcarTodos() {
-  jogadoresSelecionados = [...jogadores];
-  renderJogadores(jogadores);
-}
-
-function desmarcarTodos() {
-  jogadoresSelecionados = [];
-  renderJogadores(jogadores);
-}
-
-function filtrarGoleiros() {
-  renderJogadores(jogadores.filter(j => j.goleiro));
-}
-
-function filtrarEstrelas() {
-  renderJogadores(jogadores.filter(j => j.estrela >= 4));
-}
-
-function animarSorteioPorTime(times) {
-  const container = document.getElementById('resultados');
-  container.innerHTML = '';
-  const blocos = times.map((_, i) => {
-    const bloco = document.createElement('div');
-    bloco.className = 'time';
-    bloco.innerHTML = `<h2>Time ${i + 1}</h2>`;
-    container.appendChild(bloco);
-    return bloco;
-  });
-
-  let rodada = 0;
-  const totalRodadas = Math.max(...times.map(t => t.length));
-  const intervalo = setInterval(() => {
-    if (rodada >= totalRodadas) return clearInterval(intervalo);
-    for (let t = 0; t < times.length; t++) {
-      const jogador = times[t][rodada];
-      if (jogador) {
-        const el = document.createElement('div');
-        el.textContent = `⚽ ${jogador.nome} (${jogador.estrela})`;
-        blocos[t].appendChild(el);
-      }
+    function renderJogadores() {
+      const container = document.getElementById("jogadores");
+      container.innerHTML = "";
+      jogadores.forEach(nome => {
+        const div = document.createElement("div");
+        div.className = "jogador";
+        div.textContent = nome;
+        div.onclick = () => {
+          div.classList.toggle("selecionado");
+          if (jogadoresSelecionados.includes(nome)) {
+            jogadoresSelecionados = jogadoresSelecionados.filter(j => j !== nome);
+          } else {
+            jogadoresSelecionados.push(nome);
+          }
+        };
+        container.appendChild(div);
+      });
     }
-    rodada++;
-  }, 300);
 
-  setTimeout(() => abrirFormularioRodada(times.flat()), totalRodadas * 300 + 500);
-}
+    
+    function sortearTimes() {
+      const numTimes = parseInt(document.getElementById("numTimes").value) || 2;
+      if (jogadoresSelecionados.length < numTimes) {
+        alert("Selecione pelo menos " + numTimes + " jogadores.");
+        return;
+      }
+      const embaralhados = [...jogadoresSelecionados].sort(() => Math.random() - 0.5);
+      const times = Array.from({ length: numTimes }, () => []);
+      embaralhados.forEach((j, i) => {
+        times[i % numTimes].push(j);
+      });
+      mostrarTimes(times);
+      criarFormularioRodada(embaralhados);
+    }
+    
+      if (jogadoresSelecionados.length < 2) {
+        alert("Selecione pelo menos 2 jogadores.");
+        return;
+      }
+      const embaralhados = [...jogadoresSelecionados].sort(() => Math.random() - 0.5);
+      const time1 = [], time2 = [];
+      for (let i = 0; i < embaralhados.length; i++) {
+        (i % 2 === 0 ? time1 : time2).push(embaralhados[i]);
+      }
+      mostrarTimes([time1, time2]);
+      criarFormularioRodada([...time1, ...time2]);
+    }
 
-function abrirFormularioRodada(jogadores) {
-  let html = '<h2>Registrar Rodada</h2>';
-  html += '<table border="1" cellpadding="4"><tr><th>Jogador</th><th>Gols</th><th>Assistências</th><th>Resultado</th></tr>';
-  jogadores.forEach(j => {
-    html += `<tr>
-      <td>${j.nome}</td>
-      <td><input type='number' min='0' value='0' name='gols_${j.nome}' /></td>
-      <td><input type='number' min='0' value='0' name='assists_${j.nome}' /></td>
-      <td>
-        <select name='resultado_${j.nome}'>
-          <option value='vitoria'>Vitória</option>
-          <option value='empate'>Empate</option>
-          <option value='derrota'>Derrota</option>
-        </select>
-      </td>
-    </tr>`;
-  });
-  html += '</table>';
-  html += '<button onclick="salvarRodada()">Salvar Dados da Rodada</button>';
-  document.getElementById('formRodada').innerHTML = html;
-}
+    function mostrarTimes(times) {
+      const container = document.getElementById("resultados");
+      container.innerHTML = "";
+      times.forEach((time, i) => {
+        const div = document.createElement("div");
+        div.className = "time";
+        div.innerHTML = "<h2>Time " + (i + 1) + "</h2>";
+        time.forEach(j => {
+          div.innerHTML += "<div>" + j + "</div>";
+        });
+        container.appendChild(div);
+      });
+    }
 
-function salvarRodada() {
-  const inputs = document.querySelectorAll('#formRodada input, #formRodada select');
-  const dadosRodada = {};
-  inputs.forEach(input => {
-    const nome = input.name;
-    const valor = input.type === 'number' ? parseInt(input.value) : input.value;
-    dadosRodada[nome] = valor;
-  });
-  localStorage.setItem('dadosRodada', JSON.stringify(dadosRodada));
-  alert('Dados da rodada salvos no navegador!');
-}
+    function criarFormularioRodada(jogadores) {
+      let html = "<h2>Registrar Rodada</h2>";
+      html += "<table><tr><th>Jogador</th><th>Gols</th><th>Assistências</th><th>Resultado</th></tr>";
+      jogadores.forEach(nome => {
+        html += `<tr>
+          <td>${nome}</td>
+          <td><input type="number" name="gols_${nome}" min="0" value="0"></td>
+          <td><input type="number" name="assist_${nome}" min="0" value="0"></td>
+          <td>
+            <select name="resultado_${nome}">
+              <option value="vitoria">Vitória</option>
+              <option value="empate">Empate</option>
+              <option value="derrota">Derrota</option>
+            </select>
+          </td>
+        </tr>`;
+      });
+      html += "</table>";
+      html += "<button onclick='salvarRodada()'>Salvar Dados da Rodada</button>";
+      document.getElementById("rodada").innerHTML = html;
+    }
 
+    function salvarRodada() {
+      const dados = {};
+      const inputs = document.querySelectorAll("#rodada input, #rodada select");
+      inputs.forEach(el => {
+        dados[el.name] = el.value;
+      });
+      localStorage.setItem("rodadaAtual", JSON.stringify(dados));
+      alert("Dados da rodada salvos no navegador!");
+    }
+
+    renderJogadores();
   </script>
 </body>
 </html>
