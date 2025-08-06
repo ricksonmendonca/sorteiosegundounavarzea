@@ -208,3 +208,105 @@
   </script>
 </body>
 </html>
+// Lista atualizada de jogadores com nomes e estrelas base (3 por padrão)
+const jogadores = [
+  { nome: 'NICOLAS', estrela: 3 },
+  { nome: 'RUAN', estrela: 3 },
+  { nome: 'SENEGAL', estrela: 3 },
+  { nome: 'RICKSON', estrela: 3 },
+  { nome: 'MUNIZ', estrela: 3 },
+  { nome: 'PEDRO QUEIROZ', estrela: 3 },
+  { nome: 'ALMIRZINHO', estrela: 3 },
+  { nome: 'MARCELINHO', estrela: 3 },
+  { nome: 'ALVARO', estrela: 3 },
+  { nome: 'PELANCA', estrela: 3 },
+  { nome: 'JOÃO MARCOS', estrela: 3 },
+  { nome: 'FIUZA', estrela: 3 },
+  { nome: 'THALLES', estrela: 3 },
+  { nome: 'LÉO', estrela: 3 },
+  { nome: 'NEY', estrela: 3 },
+  { nome: 'RONINHO', estrela: 3 },
+  { nome: 'KEVIN', estrela: 3 },
+  { nome: 'YAGO', estrela: 3 },
+  { nome: 'MATHEU FARIA', estrela: 3 },
+  { nome: 'DENYS', estrela: 3 },
+  { nome: 'GUERRON', estrela: 3 },
+  { nome: 'PAULINHO', estrela: 3 },
+  { nome: 'PAULO', estrela: 3 },
+  { nome: 'ÍTALO', estrela: 3 },
+  { nome: 'JEFERSON', estrela: 3 },
+  { nome: 'RENZO', estrela: 3 },
+  { nome: 'CANJICA', estrela: 3 },
+  { nome: 'DOUGLAS', estrela: 3 },
+  { nome: 'SAVIO', estrela: 3 },
+  { nome: 'PEDRO', estrela: 3 },
+  { nome: 'DEDÉ', estrela: 3 },
+  { nome: 'WASHINGTON', estrela: 3 },
+  { nome: 'BERENGER', estrela: 3 },
+  { nome: 'LUCAS AZEVEDO', estrela: 3 },
+  { nome: 'VINI', estrela: 3 },
+  { nome: 'RAFAEL', estrela: 3 },
+  // Goleiros fixos
+  { nome: 'KLAISON', estrela: 3, goleiro: true },
+  { nome: 'BATATA', estrela: 3, goleiro: true }
+];
+
+// Configurações de animação e sorteio equilibrado ativadas
+const animarSorteio = true;
+const equilibrioPorEstrelas = true;
+
+// Elementos para filtros
+const buscaInput = document.getElementById('busca');
+const containerJogadores = document.getElementById('jogadores');
+
+buscaInput.addEventListener('input', () => {
+  const termo = buscaInput.value.toLowerCase();
+  renderJogadores(jogadores.filter(j => j.nome.toLowerCase().includes(termo)));
+});
+
+function marcarTodos() {
+  jogadoresSelecionados = [...jogadores];
+  renderJogadores(jogadores);
+}
+
+function desmarcarTodos() {
+  jogadoresSelecionados = [];
+  renderJogadores(jogadores);
+}
+
+function filtrarGoleiros() {
+  renderJogadores(jogadores.filter(j => j.goleiro));
+}
+
+function filtrarEstrelas() {
+  renderJogadores(jogadores.filter(j => j.estrela >= 4));
+}
+
+// Animação de sorteio alternando
+function animarSorteioPorTime(times) {
+  const container = document.getElementById('resultados');
+  container.innerHTML = '';
+  const blocos = times.map((_, i) => {
+    const bloco = document.createElement('div');
+    bloco.className = 'time';
+    bloco.innerHTML = `<h2>Time ${i + 1}</h2>`;
+    container.appendChild(bloco);
+    return bloco;
+  });
+
+  let i = 0;
+  let rodada = 0;
+  const totalRodadas = Math.max(...times.map(t => t.length));
+  const intervalo = setInterval(() => {
+    if (rodada >= totalRodadas) return clearInterval(intervalo);
+    for (let t = 0; t < times.length; t++) {
+      const jogador = times[t][rodada];
+      if (jogador) {
+        const el = document.createElement('div');
+        el.textContent = `⚽ ${jogador.nome} (${jogador.estrela})`;
+        blocos[t].appendChild(el);
+      }
+    }
+    rodada++;
+  }, 300);
+}
