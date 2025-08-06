@@ -1,37 +1,26 @@
+
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Sorteador de Times - Várzea FC</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
-  <header>
-    <h1>Sorteador de Times - Várzea FC</h1>
-    <button id="toggleTheme">Alternar Tema</button>
-  </header>
-
-  <main>
-    <section id="controls">
-      <input type="text" id="search" placeholder="Buscar jogador..." />
-      <button onclick="toggleAll(true)">Marcar todos</button>
-      <button onclick="toggleAll(false)">Desmarcar todos</button>
-      <button onclick="filtrar('goleiro')">Só Goleiros</button>
-      <button onclick="filtrar('estrela')">Estrelas 4+</button>
-      <label>Qtd de Times: <input type="number" id="numTeams" min="2" max="6" value="2" /></label>
-      <button onclick="sortearTimes()">Sortear</button>
-      <button onclick="exportarPDF()">Download PDF</button>
-    </section>
-
-    <section id="jogadores">
-      <!-- Lista de jogadores será renderizada aqui -->
-    </section>
-
-    <section id="resultados">
-      <!-- Times sorteados aparecerão aqui com animação -->
-    </section>
-  </main>
+  <h1>Sorteador de Times - Várzea FC</h1>
+  <div id="controls">
+    <input type="text" id="busca" placeholder="Buscar jogador..." />
+    <button onclick="marcarTodos()">Marcar todos</button>
+    <button onclick="desmarcarTodos()">Desmarcar todos</button>
+    <button onclick="filtrarGoleiros()">Só Goleiros</button>
+    <button onclick="filtrarEstrelas()">Estrelas 4+</button>
+    <label>Qtd de Times: <input id="qtdTimes" type="number" value="2" min="2"/></label>
+    <button onclick="sortear()">Sortear</button>
+    <button onclick="gerarPDF()">Download PDF</button>
+    <button onclick="alternarTema()">Alternar Tema</button>
+  </div>
+  <div id="times"></div>
 
   <script src="script.js"></script>
 </body>
