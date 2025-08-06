@@ -1,27 +1,210 @@
-
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Sorteador de Times - Várzea FC</title>
-  <link rel="stylesheet" href="style.css"/>
+  <meta charset="UTF-8">
+  <title>Sorteio de Times - Segundou na Várzea</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      background: #111;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      text-align: center;
+    }
+    h1 {
+      color: #FFD700;
+    }
+    .options {
+      margin: 20px 0;
+    }
+    .options label {
+      margin-right: 10px;
+    }
+    .player-list {
+      max-width: 900px;
+      margin: 20px auto;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+    .player {
+      background: #222;
+      border: 2px solid #FFD700;
+      border-radius: 8px;
+      padding: 10px;
+      width: 180px;
+      text-align: left;
+    }
+    .player input[type="checkbox"] {
+      margin-right: 5px;
+    }
+    .stars {
+      display: inline-block;
+    }
+    .stars input {
+      display: none;
+    }
+    .stars label {
+      color: gray;
+      font-size: 18px;
+      cursor: pointer;
+    }
+    .stars input:checked ~ label {
+      color: #FFD700;
+    }
+    button, select, input[type="number"] {
+      margin-top: 10px;
+      padding: 10px;
+      font-size: 16px;
+      background: #FFD700;
+      color: #111;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .teams {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 30px;
+      gap: 20px;
+    }
+    .team {
+      background: #222;
+      border: 2px solid #FFD700;
+      border-radius: 10px;
+      padding: 15px;
+      width: 250px;
+    }
+    .team h3 {
+      margin: 0 0 10px;
+      color: #FFD700;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    ul li {
+      margin: 5px 0;
+    }
+  </style>
 </head>
 <body>
-  <h1>Sorteador de Times - Várzea FC</h1>
-  <div id="controls">
-    <input type="text" id="busca" placeholder="Buscar jogador..." />
-    <button onclick="marcarTodos()">Marcar todos</button>
-    <button onclick="desmarcarTodos()">Desmarcar todos</button>
-    <button onclick="filtrarGoleiros()">Só Goleiros</button>
-    <button onclick="filtrarEstrelas()">Estrelas 4+</button>
-    <label>Qtd de Times: <input id="qtdTimes" type="number" value="2" min="2"/></label>
-    <button onclick="sortear()">Sortear</button>
-    <button onclick="gerarPDF()">Download PDF</button>
-    <button onclick="alternarTema()">Alternar Tema</button>
+  <h1>Sorteio de Times - Segundou na Várzea</h1>
+  <div class="options">
+    <label><input type="radio" name="mode" value="times" checked> Número de times:</label>
+    <input type="number" id="numTimes" value="2" min="2" max="10">
+    <label><input type="radio" name="mode" value="jogadores"> Jogadores por time:</label>
+    <input type="number" id="jogadoresPorTime" value="5" min="2" max="20">
   </div>
-  <div id="times"></div>
-
-  <script src="script.js"></script>
+  <div class="player-list" id="playerList"></div>
+  <button onclick="sortearTimes()">Sortear Times</button>
+  <button onclick="resetar()">Resetar</button>
+  <button onclick="exportarImagem()">Exportar como Imagem</button>
+  <div class="teams" id="teamsContainer"></div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script>
+    const goleirosFixos = ["KLAISON", "BATATA"];
+    const jogadores = [
+      "NICOLAS","RUAN","SENEGAL","RICKSON","MUNIZ","PEDRO QUEIROZ",
+      "ALMIRZINHO","MARCELINHO","ALVARO","PELANCA","JOÃO MARCOS","FIUZA",
+      "THALLES","LÉO","NEY","RONINHO","KEVIN","YAGO","MATHEU FARIA","DENYS",
+      "GUERRON","PAULINHO","PAULO","ÍTALO","JEFERSON","RENZO","CANJICA",
+      "DOUGLAS","SAVIO","PEDRO","DEDÉ","WASHINGTON","BERENGER","LUCAS AZEVEDO",
+      "RAFAEL", "KLAISON", "BATATA"
+    ];
+    const playerListDiv = document.getElementById("playerList");
+    jogadores.forEach((jogador, index) => {
+      const playerDiv = document.createElement("div");
+      playerDiv.className = "player";
+      const storedStars = localStorage.getItem(`stars-${index}`) || 3;
+      const checked = localStorage.getItem(`check-${index}`) !== 'false';
+      playerDiv.innerHTML = `
+        <label>
+          <input type="checkbox" id="player-${index}" ${checked ? 'checked' : ''} onchange="saveCheck(${index})">
+          ${jogador} ${goleirosFixos.includes(jogador) ? '(Goleiro)' : ''}
+        </label><br>
+        <div class="stars" id="stars-${index}">
+          ${[5,4,3,2,1].map(star => `
+            <input type="radio" name="stars-${index}" id="star-${index}-${star}" value="${star}" ${storedStars == star ? 'checked' : ''} onchange="saveStars(${index})">
+            <label for="star-${index}-${star}">&#9733;</label>
+          `).join('')}
+        </div>
+      `;
+      playerListDiv.appendChild(playerDiv);
+    });
+    function saveStars(index) {
+      const value = document.querySelector(`input[name='stars-${index}']:checked`).value;
+      localStorage.setItem(`stars-${index}`, value);
+    }
+    function saveCheck(index) {
+      const checked = document.getElementById(`player-${index}`).checked;
+      localStorage.setItem(`check-${index}`, checked);
+    }
+    function resetar() {
+      jogadores.forEach((_, i) => {
+        localStorage.removeItem(`stars-${i}`);
+        localStorage.removeItem(`check-${i}`);
+      });
+      location.reload();
+    }
+    function sortearTimes() {
+      const mode = document.querySelector('input[name="mode"]:checked').value;
+      let numTimes = parseInt(document.getElementById("numTimes").value);
+      const jogadoresPorTime = parseInt(document.getElementById("jogadoresPorTime").value);
+      let selecionados = [];
+      jogadores.forEach((nome, index) => {
+        const checkbox = document.getElementById(`player-${index}`);
+        const estrelas = document.querySelector(`input[name="stars-${index}"]:checked`);
+        if (checkbox?.checked) {
+          selecionados.push({ nome, estrelas: parseInt(estrelas?.value || 3) });
+        }
+      });
+      if (mode === 'jogadores') {
+        numTimes = Math.floor(selecionados.length / jogadoresPorTime);
+        if (numTimes < 2) return alert("Jogadores insuficientes para formar mínimo 2 times.");
+      }
+      const goleiros = selecionados.filter(p => goleirosFixos.includes(p.nome));
+      const naoGoleiros = selecionados.filter(p => !goleirosFixos.includes(p.nome));
+      const teams = Array.from({ length: numTimes }, () => []);
+      goleiros.sort(() => Math.random() - 0.5).forEach((goleiro, i) => {
+        if (i < numTimes) teams[i].push(goleiro);
+      });
+      naoGoleiros.sort(() => Math.random() - 0.5);
+      naoGoleiros.sort((a, b) => b.estrelas - a.estrelas);
+      let idx = 0, dir = 1;
+      naoGoleiros.forEach(j => {
+        teams[idx].push(j);
+        idx += dir;
+        if (idx >= numTimes || idx < 0) {
+          dir *= -1;
+          idx += dir;
+        }
+      });
+      const container = document.getElementById("teamsContainer");
+      container.innerHTML = "";
+      teams.forEach((time, i) => {
+        const div = document.createElement("div");
+        div.className = "team";
+        div.innerHTML = `
+          <h3>Time ${i + 1}</h3>
+          <ul>
+            ${time.map(p => `<li>${p.nome} (${p.estrelas}★)</li>`).join("")}
+          </ul>
+        `;
+        container.appendChild(div);
+      });
+    }
+    function exportarImagem() {
+      html2canvas(document.getElementById("teamsContainer")).then(canvas => {
+        const link = document.createElement('a');
+        link.download = 'sorteio-times.png';
+        link.href = canvas.toDataURL();
+        link.click();
+      });
+    }
+  </script>
 </body>
 </html>
