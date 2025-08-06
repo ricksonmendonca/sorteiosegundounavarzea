@@ -1,210 +1,198 @@
+
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <title>Sorteio de Times - Segundou na Várzea</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <title>Sorteador de Times - Várzea FC</title>
   <style>
     body {
-      background: #111;
-      color: #fff;
-      font-family: Arial, sans-serif;
-      padding: 20px;
+      background: #000;
+      color: #ff0;
+      font-family: sans-serif;
       text-align: center;
     }
-    h1 {
-      color: #FFD700;
-    }
-    .options {
-      margin: 20px 0;
-    }
-    .options label {
-      margin-right: 10px;
-    }
-    .player-list {
-      max-width: 900px;
-      margin: 20px auto;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-    }
-    .player {
-      background: #222;
-      border: 2px solid #FFD700;
-      border-radius: 8px;
-      padding: 10px;
-      width: 180px;
-      text-align: left;
-    }
-    .player input[type="checkbox"] {
-      margin-right: 5px;
-    }
-    .stars {
+    .jogador {
+      border: 1px solid yellow;
+      padding: 5px;
+      margin: 4px;
       display: inline-block;
-    }
-    .stars input {
-      display: none;
-    }
-    .stars label {
-      color: gray;
-      font-size: 18px;
+      border-radius: 6px;
       cursor: pointer;
     }
-    .stars input:checked ~ label {
-      color: #FFD700;
+    .selecionado {
+      background: yellow;
+      color: black;
     }
-    button, select, input[type="number"] {
-      margin-top: 10px;
-      padding: 10px;
-      font-size: 16px;
-      background: #FFD700;
-      color: #111;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    .teams {
+    #resultados {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      margin-top: 30px;
-      gap: 20px;
+      gap: 10px;
+      margin-top: 20px;
     }
-    .team {
-      background: #222;
-      border: 2px solid #FFD700;
-      border-radius: 10px;
-      padding: 15px;
-      width: 250px;
+    .time {
+      background: #111;
+      padding: 10px;
+      border: 1px solid #555;
+      border-radius: 8px;
+      width: 200px;
     }
-    .team h3 {
-      margin: 0 0 10px;
-      color: #FFD700;
+    table {
+      margin: 20px auto;
+      background: #111;
+      color: #fff;
     }
-    ul {
-      list-style: none;
-      padding: 0;
-    }
-    ul li {
-      margin: 5px 0;
+    table input, table select {
+      padding: 4px;
     }
   </style>
 </head>
 <body>
-  <h1>Sorteio de Times - Segundou na Várzea</h1>
-  <div class="options">
-    <label><input type="radio" name="mode" value="times" checked> Número de times:</label>
-    <input type="number" id="numTimes" value="2" min="2" max="10">
-    <label><input type="radio" name="mode" value="jogadores"> Jogadores por time:</label>
-    <input type="number" id="jogadoresPorTime" value="5" min="2" max="20">
-  </div>
-  <div class="player-list" id="playerList"></div>
-  <button onclick="sortearTimes()">Sortear Times</button>
-  <button onclick="resetar()">Resetar</button>
-  <button onclick="exportarImagem()">Exportar como Imagem</button>
-  <div class="teams" id="teamsContainer"></div>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <h1>Sorteador de Times - Várzea FC</h1>
+  <input id="busca" placeholder="Buscar jogador..." />
+  <br>
+  <button onclick="marcarTodos()">Marcar todos</button>
+  <button onclick="desmarcarTodos()">Desmarcar todos</button>
+  <button onclick="filtrarGoleiros()">Só goleiros</button>
+  <button onclick="filtrarEstrelas()">Estrelas 4+</button>
+  <div id="jogadores"></div>
+  <div id="resultados"></div>
+  <div id="formRodada"></div>
   <script>
-    const goleirosFixos = ["KLAISON", "BATATA"];
-    const jogadores = [
-      "NICOLAS","RUAN","SENEGAL","RICKSON","MUNIZ","PEDRO QUEIROZ",
-      "ALMIRZINHO","MARCELINHO","ALVARO","PELANCA","JOÃO MARCOS","FIUZA",
-      "THALLES","LÉO","NEY","RONINHO","KEVIN","YAGO","MATHEU FARIA","DENYS",
-      "GUERRON","PAULINHO","PAULO","ÍTALO","JEFERSON","RENZO","CANJICA",
-      "DOUGLAS","SAVIO","PEDRO","DEDÉ","WASHINGTON","BERENGER","LUCAS AZEVEDO",
-      "RAFAEL", "KLAISON", "BATATA"
-    ];
-    const playerListDiv = document.getElementById("playerList");
-    jogadores.forEach((jogador, index) => {
-      const playerDiv = document.createElement("div");
-      playerDiv.className = "player";
-      const storedStars = localStorage.getItem(`stars-${index}`) || 3;
-      const checked = localStorage.getItem(`check-${index}`) !== 'false';
-      playerDiv.innerHTML = `
-        <label>
-          <input type="checkbox" id="player-${index}" ${checked ? 'checked' : ''} onchange="saveCheck(${index})">
-          ${jogador} ${goleirosFixos.includes(jogador) ? '(Goleiro)' : ''}
-        </label><br>
-        <div class="stars" id="stars-${index}">
-          ${[5,4,3,2,1].map(star => `
-            <input type="radio" name="stars-${index}" id="star-${index}-${star}" value="${star}" ${storedStars == star ? 'checked' : ''} onchange="saveStars(${index})">
-            <label for="star-${index}-${star}">&#9733;</label>
-          `).join('')}
-        </div>
-      `;
-      playerListDiv.appendChild(playerDiv);
-    });
-    function saveStars(index) {
-      const value = document.querySelector(`input[name='stars-${index}']:checked`).value;
-      localStorage.setItem(`stars-${index}`, value);
-    }
-    function saveCheck(index) {
-      const checked = document.getElementById(`player-${index}`).checked;
-      localStorage.setItem(`check-${index}`, checked);
-    }
-    function resetar() {
-      jogadores.forEach((_, i) => {
-        localStorage.removeItem(`stars-${i}`);
-        localStorage.removeItem(`check-${i}`);
-      });
-      location.reload();
-    }
-    function sortearTimes() {
-      const mode = document.querySelector('input[name="mode"]:checked').value;
-      let numTimes = parseInt(document.getElementById("numTimes").value);
-      const jogadoresPorTime = parseInt(document.getElementById("jogadoresPorTime").value);
-      let selecionados = [];
-      jogadores.forEach((nome, index) => {
-        const checkbox = document.getElementById(`player-${index}`);
-        const estrelas = document.querySelector(`input[name="stars-${index}"]:checked`);
-        if (checkbox?.checked) {
-          selecionados.push({ nome, estrelas: parseInt(estrelas?.value || 3) });
-        }
-      });
-      if (mode === 'jogadores') {
-        numTimes = Math.floor(selecionados.length / jogadoresPorTime);
-        if (numTimes < 2) return alert("Jogadores insuficientes para formar mínimo 2 times.");
+// Lista atualizada de jogadores com nomes e estrelas base (3 por padrão)
+const jogadores = [
+  { nome: 'NICOLAS', estrela: 3 },
+  { nome: 'RUAN', estrela: 3 },
+  { nome: 'SENEGAL', estrela: 3 },
+  { nome: 'RICKSON', estrela: 3 },
+  { nome: 'MUNIZ', estrela: 3 },
+  { nome: 'PEDRO QUEIROZ', estrela: 3 },
+  { nome: 'ALMIRZINHO', estrela: 3 },
+  { nome: 'MARCELINHO', estrela: 3 },
+  { nome: 'ALVARO', estrela: 3 },
+  { nome: 'PELANCA', estrela: 3 },
+  { nome: 'JOÃO MARCOS', estrela: 3 },
+  { nome: 'FIUZA', estrela: 3 },
+  { nome: 'THALLES', estrela: 3 },
+  { nome: 'LÉO', estrela: 3 },
+  { nome: 'NEY', estrela: 3 },
+  { nome: 'RONINHO', estrela: 3 },
+  { nome: 'KEVIN', estrela: 3 },
+  { nome: 'YAGO', estrela: 3 },
+  { nome: 'MATHEU FARIA', estrela: 3 },
+  { nome: 'DENYS', estrela: 3 },
+  { nome: 'GUERRON', estrela: 3 },
+  { nome: 'PAULINHO', estrela: 3 },
+  { nome: 'PAULO', estrela: 3 },
+  { nome: 'ÍTALO', estrela: 3 },
+  { nome: 'JEFERSON', estrela: 3 },
+  { nome: 'RENZO', estrela: 3 },
+  { nome: 'CANJICA', estrela: 3 },
+  { nome: 'DOUGLAS', estrela: 3 },
+  { nome: 'SAVIO', estrela: 3 },
+  { nome: 'PEDRO', estrela: 3 },
+  { nome: 'DEDÉ', estrela: 3 },
+  { nome: 'WASHINGTON', estrela: 3 },
+  { nome: 'BERENGER', estrela: 3 },
+  { nome: 'LUCAS AZEVEDO', estrela: 3 },
+  { nome: 'VINI', estrela: 3 },
+  { nome: 'RAFAEL', estrela: 3 },
+  { nome: 'KLAISON', estrela: 3, goleiro: true },
+  { nome: 'BATATA', estrela: 3, goleiro: true }
+];
+
+const animarSorteio = true;
+const equilibrioPorEstrelas = true;
+
+const buscaInput = document.getElementById('busca');
+const containerJogadores = document.getElementById('jogadores');
+
+buscaInput.addEventListener('input', () => {
+  const termo = buscaInput.value.toLowerCase();
+  renderJogadores(jogadores.filter(j => j.nome.toLowerCase().includes(termo)));
+});
+
+function marcarTodos() {
+  jogadoresSelecionados = [...jogadores];
+  renderJogadores(jogadores);
+}
+
+function desmarcarTodos() {
+  jogadoresSelecionados = [];
+  renderJogadores(jogadores);
+}
+
+function filtrarGoleiros() {
+  renderJogadores(jogadores.filter(j => j.goleiro));
+}
+
+function filtrarEstrelas() {
+  renderJogadores(jogadores.filter(j => j.estrela >= 4));
+}
+
+function animarSorteioPorTime(times) {
+  const container = document.getElementById('resultados');
+  container.innerHTML = '';
+  const blocos = times.map((_, i) => {
+    const bloco = document.createElement('div');
+    bloco.className = 'time';
+    bloco.innerHTML = `<h2>Time ${i + 1}</h2>`;
+    container.appendChild(bloco);
+    return bloco;
+  });
+
+  let rodada = 0;
+  const totalRodadas = Math.max(...times.map(t => t.length));
+  const intervalo = setInterval(() => {
+    if (rodada >= totalRodadas) return clearInterval(intervalo);
+    for (let t = 0; t < times.length; t++) {
+      const jogador = times[t][rodada];
+      if (jogador) {
+        const el = document.createElement('div');
+        el.textContent = `⚽ ${jogador.nome} (${jogador.estrela})`;
+        blocos[t].appendChild(el);
       }
-      const goleiros = selecionados.filter(p => goleirosFixos.includes(p.nome));
-      const naoGoleiros = selecionados.filter(p => !goleirosFixos.includes(p.nome));
-      const teams = Array.from({ length: numTimes }, () => []);
-      goleiros.sort(() => Math.random() - 0.5).forEach((goleiro, i) => {
-        if (i < numTimes) teams[i].push(goleiro);
-      });
-      naoGoleiros.sort(() => Math.random() - 0.5);
-      naoGoleiros.sort((a, b) => b.estrelas - a.estrelas);
-      let idx = 0, dir = 1;
-      naoGoleiros.forEach(j => {
-        teams[idx].push(j);
-        idx += dir;
-        if (idx >= numTimes || idx < 0) {
-          dir *= -1;
-          idx += dir;
-        }
-      });
-      const container = document.getElementById("teamsContainer");
-      container.innerHTML = "";
-      teams.forEach((time, i) => {
-        const div = document.createElement("div");
-        div.className = "team";
-        div.innerHTML = `
-          <h3>Time ${i + 1}</h3>
-          <ul>
-            ${time.map(p => `<li>${p.nome} (${p.estrelas}★)</li>`).join("")}
-          </ul>
-        `;
-        container.appendChild(div);
-      });
     }
-    function exportarImagem() {
-      html2canvas(document.getElementById("teamsContainer")).then(canvas => {
-        const link = document.createElement('a');
-        link.download = 'sorteio-times.png';
-        link.href = canvas.toDataURL();
-        link.click();
-      });
-    }
+    rodada++;
+  }, 300);
+
+  setTimeout(() => abrirFormularioRodada(times.flat()), totalRodadas * 300 + 500);
+}
+
+function abrirFormularioRodada(jogadores) {
+  let html = '<h2>Registrar Rodada</h2>';
+  html += '<table border="1" cellpadding="4"><tr><th>Jogador</th><th>Gols</th><th>Assistências</th><th>Resultado</th></tr>';
+  jogadores.forEach(j => {
+    html += `<tr>
+      <td>${j.nome}</td>
+      <td><input type='number' min='0' value='0' name='gols_${j.nome}' /></td>
+      <td><input type='number' min='0' value='0' name='assists_${j.nome}' /></td>
+      <td>
+        <select name='resultado_${j.nome}'>
+          <option value='vitoria'>Vitória</option>
+          <option value='empate'>Empate</option>
+          <option value='derrota'>Derrota</option>
+        </select>
+      </td>
+    </tr>`;
+  });
+  html += '</table>';
+  html += '<button onclick="salvarRodada()">Salvar Dados da Rodada</button>';
+  document.getElementById('formRodada').innerHTML = html;
+}
+
+function salvarRodada() {
+  const inputs = document.querySelectorAll('#formRodada input, #formRodada select');
+  const dadosRodada = {};
+  inputs.forEach(input => {
+    const nome = input.name;
+    const valor = input.type === 'number' ? parseInt(input.value) : input.value;
+    dadosRodada[nome] = valor;
+  });
+  localStorage.setItem('dadosRodada', JSON.stringify(dadosRodada));
+  alert('Dados da rodada salvos no navegador!');
+}
+
   </script>
 </body>
 </html>
